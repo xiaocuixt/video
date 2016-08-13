@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title></title>
+  <meta charset="utf-8">
+  <style type="text/css">
+    body {
+      background-color: #262626;
+      margin: 0 auto;
+      text-align: center;
+    }
+    video {
+      margin-top: 100px;
+      border: solid 20px #fff;
+    }
+    #progressbar {
+      border: solid 1px #aaa;
+      color: #fff;
+      width: 680px;
+      height: 20px;
+    }
+    #played {
+      background-color: green;
+      height: 20px;
+      display: inline-block;
+    }
+    .container {
+      width: 680px;
+    }
+    .title {
+      width: 300px;
+      height: 30px;
+      background-color: #aaa;
+      z-index: 2;
+      position: relative;
+      margin: 10px auto;
+      border: solid 1px #262626;
+      text-transform: uppercase;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title">测试视频</div>
+    <video controls preload="metadata" poster="http://7xj8j2.com1.z0.glb.clouddn.com/xiamen.jpg" height="400" width="680">
+      <source src="http://7xj8j2.com1.z0.glb.clouddn.com/%23417%20Foundation.mp4">
+      <a href="http://7xj8j2.com1.z0.glb.clouddn.com/%23417%20Foundation.mp4">下载该视频</a>
+      <!-- 兼容IE低版本浏览器 -->
+      <figure>
+        <a href="http://7xj8j2.com1.z0.glb.clouddn.com/%23417%20Foundation.mp4">
+          <img src="http://7xj8j2.com1.z0.glb.clouddn.com/xiamen.jpg" alt="" height="400" width="680">
+        </a>
+      </figure>
+      <!-- 使用flash兼容低版本浏览器 -->
+      <object type="application/x-shockwave-flash" data="player.swf?videoUrl=http://7xj8j2.com1.z0.glb.clouddn.com/%23417%20Foundation.mp4&autoPlay=true" height="400" width="680">
+        <param name="movie" value="player.swf?videoUrl=http://7xj8j2.com1.z0.glb.clouddn.com/%23417%20Foundation.mp4&autoPlay=true">
+      </object>
+    </video>
+    <div id="progressbar"><span id="played"></span></div>
+    <div id="controls">
+      <button id="playpause" title="play" onclick="togglePlay();">播放</button>
+      <button id="stop" title="stop" onclick="stopVideo();">重播</button>
+
+      <button id="rewind" title="reverse" onclick="changePlaybackSpeed('-');">&laquo;</button>
+      <button id="volumeUp" title="fast forward" onclick="changePlaybackSpeed('+');">&raquo;</button>
+
+
+      <button id="volumeDown" title="-" onclick="changeVolume('-');">-</button>
+      <button id="volumeUp" title="+" onclick="changeVolume('+');">+</button>
+      <button id="mute" title="mute" onclick="toggleMute();">静音</button>
+    </div>
+  </div>
+</body>
+</html>
+
+<script type="text/javascript">
+  var video = document.getElementsByTagName('video')[0];
+  video.controls = false;  //去掉播放器默认的控制
+
+  var ppbutton = document.getElementById('playpause');
+
+  function stopVideo(){
+    video.pause();
+    video.currentTime = 0;
+  }
+
+  video.addEventListener('play', function(){
+    ppbutton.title = "pause";
+    ppbutton.innerHTML = "暂停";
+  }, false);
+  video.addEventListener('pause', function(){
+    ppbutton.title = "play";
+    ppbutton.innerHTML = "开始";
+  }, false);
+
+
+  function togglePlay(){
+    if(video.paused || video.ended){
+      if(video.ended) video.currentTime = 0;
+      video.play();
+    }else{
+      video.pause();
+    }
+  }
+
+  // 调整音量
+  function changeVolume(direction){
+    var volume = Math.floor(video.volume * 10) / 10;
+    video.muted = false;
+    if(direction == "-"){
+      if(volume <= 0.1) video.volume = 0;
+      else video.volume -= 0.1;
+    }else{
+      if(volume >= 0.9) video.volume = 1;
+      else video.volume += 0.1;
+    }
+  }
+
+  // 切换静音
+  function toggleMute(){
+    var mute = document.getElementById("mute");
+    if(video.muted){
+      mute.title = "mute";
+      mute.innerHTML = "静音";
+      video.muted = false;
+    }else{
+      mute.title = "unmute";
+      mute.innerHTML = "正常";
+      video.muted = true;
+    }
+  }
+  // 进度条
+  function updateProgress(){
+    var value = 0;
+    if(video.currentTime > 0){
+      value = Math.floor((100 / video.duration) * video.currentTime);
+    }
+    document.getElementById("played").style.width = value + "%";
+  }
+  video.addEventListener('timeupdate', updateProgress, false);
+
+  // 快退&快进
+  function changePlaybackSpeed(direction){
+    if(video.playbackRate != undefined){
+      if(direction == "-") video.playbackRate -= 1;
+      else video.playbackRate += 1;
+    }else{
+      if(direction == "-") video.playbackRate -= 1;
+      else video.currentTime += 1;
+    }
+  }
+
+  // 搜索条，点击进度条任意位置
+  var progressbar = document.getElementById("progressbar");
+  progressbar.addEventListener("mouseup", function(e){
+    setPlayPosition(e.pageX);
+  }, false);
+
+  function setPlayPosition(x){
+    var value = x-findPos(progressbar).toFixed(2);
+    var timeToSet = ((video.duration / progressbar.offsetWidth).toFixed(2) * value).toFixed(2);
+    video.currentTime = timeToSet;
+  }
+
+  function findPos(obj){
+    var curLeft = 0;
+    if(obj.offsetParent){
+      do {curLeft += obj.offsetLeft;} while(obj = obj.offsetParent)
+    }
+    return curLeft;
+  }
+
+</script>
